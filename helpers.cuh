@@ -26,6 +26,11 @@ void add_undirected_edge(Graph *graph, int i, int j);
 // print a graph
 void print_graph(Graph graph);
 
+// check for the correctness of MIS
+void checkMIS(Graph* G, int* Flags);
+
+// serial implementation of MIS algorithm
+void maximalIndependentSetSerial(Graph* G, int *Flags);
 
 // print a Maximal Independent Set
 void print_mis(int* Flags, int n);

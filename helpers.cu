@@ -104,8 +104,8 @@ void checkMIS(Graph* G, int* Flags) {
     else printf("Incorrect Maximal Independent Set!\n");
 }
 
-int* maximalIndependentSetSerial(Graph* G) {
-    int* Flags = (int*) malloc(G->n * sizeof(int));
+int* maximalIndependentSetSerial(Graph* G, int *Flags) {
+    Flags = (int*) malloc(G->n * sizeof(int));
     memset(Flags, 0, G->n * sizeof(int));
 
     for(int i = 0; i < G->n; ++i) {
@@ -124,7 +124,6 @@ int* maximalIndependentSetSerial(Graph* G) {
             Flags[i] = 2;
         }
     }
-    return Flags;
 }
 
 __global__ void maximalIndependentSet(const Graph* G, int* Flags, int* V) {
