@@ -17,3 +17,5 @@ $ make
 # to clean the environment
 $ make clean
 ```
+### Documentation
+You can find the complete documentation in [Documentation.pdf](Documentation.pdf).
