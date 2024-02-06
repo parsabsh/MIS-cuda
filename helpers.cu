@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "helpers.cuh"
 
 dim3 calculateGridDim(int n) {
@@ -46,6 +47,18 @@ void add_undirected_edge(Graph *graph, int i, int j) {
     graph->V[i].degree = graph->V[i].degree + 1;
     graph->V[j].Neighbors[graph->V[j].degree] = i;
     graph->V[j].degree = graph->V[j].degree + 1;
+}
+
+void add_random_edges(Graph *graph, int E) {
+    srand(time(NULL));
+    for (int k = 0; k < E; k++) {
+        int i = rand() % graph->n;
+        int j = rand() % graph->n;
+        if (i != j)
+            add_undirected_edge(graph, i, j);
+        else
+            E++;
+    }
 }
 
 __global__ void print_graph_dev(Graph* graph) {
@@ -104,8 +117,8 @@ void checkMIS(Graph* G, int* Flags) {
     else printf("Incorrect Maximal Independent Set!\n");
 }
 
-int* maximalIndependentSetSerial(Graph* G, int *Flags) {
-    Flags = (int*) malloc(G->n * sizeof(int));
+int* maximalIndependentSetSerial(Graph* G) {
+    int* Flags = (int*) malloc(G->n * sizeof(int));
     memset(Flags, 0, G->n * sizeof(int));
 
     for(int i = 0; i < G->n; ++i) {
@@ -124,6 +137,7 @@ int* maximalIndependentSetSerial(Graph* G, int *Flags) {
             Flags[i] = 2;
         }
     }
+    return Flags;
 }
 
 __global__ void maximalIndependentSet(const Graph* G, int* Flags, int* V) {

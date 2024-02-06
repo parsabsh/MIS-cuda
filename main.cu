@@ -1,13 +1,15 @@
 #include "helpers.cuh"
 #include <stdio.h>
+#include <time.h>
 
 int main() {
-    int n = 5;
+    int n = 1000000;
     Graph* graph = new_graph_host(n, n);
-    add_undirected_edge(graph, 0, 1);
-    add_undirected_edge(graph, 4, 3);
-    add_undirected_edge(graph, 3, 2);
-    add_undirected_edge(graph, 1, 3);
+    int E = 20000;
+    add_random_edges(graph, E);
+
+    //* uncomment to print the initial graph
+    // print_graph(*graph);
 
     Graph *graph_dev;
     deep_copy_to_device(graph, &graph_dev);
@@ -27,10 +29,35 @@ int main() {
     size_t threadsPerBlock = 1;
     dim3 blocksPerGrid = calculateGridDim(graph->n);
 
+    clock_t begin = clock();
+
     maximalIndependentSet<<<blocksPerGrid, threadsPerBlock>>>(graph_dev, Flags_dev, locks_dev);
     cudaDeviceSynchronize();
 
+    clock_t end = clock();
+    double time_spent_parallel = (double)(end - begin) / CLOCKS_PER_SEC;
+
     cudaMemcpy(Flags, Flags_dev, graph->n * sizeof(int), cudaMemcpyDeviceToHost);
 
-    print_mis(Flags, graph->n);
+    //* uncomment to print the result mis
+    // print_mis(Flags, graph->n);
+
+    begin = clock();
+
+    int *Flags_serial = maximalIndependentSetSerial(graph);
+
+    end = clock();
+    double time_spent_serial = (double)(end - begin) / CLOCKS_PER_SEC;
+
+    printf("CUDA implementation:\n");
+    printf("execution time: %.6f sec\n", time_spent_parallel);
+    checkMIS(graph, Flags);
+
+    printf("---------------------------\n");
+    printf("Serial implementation:\n");
+    printf("execution time: %.6f sec\n", time_spent_serial);
+    checkMIS(graph, Flags_serial);
+
+    printf("---------------------------\n");
+    printf("speedup: %.4f\n", time_spent_serial / time_spent_parallel);
 }
