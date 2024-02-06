@@ -81,6 +81,52 @@ void print_mis(int* Flags, int n) {
     printf(" ]\n");
 }
 
+
+void checkMIS(Graph* G, int* Flags) {
+    int result = 1;
+    for(int i = 0; i < G->n; ++i) {
+        if(Flags[i] == 2) {
+            int has_ngh = 0;
+            for(int j = 0; j < G->V[i].degree; ++j) {
+                int ngh = G->V[i].Neighbors[j];
+                if (Flags[ngh] == 1) {
+                    has_ngh = 1;
+                    break;
+                }
+            }
+            if(has_ngh == 0) {
+                result = 0;
+                break;
+            }
+        }
+    }
+    if(result) printf("Correct Maximal Independent Set!\n");
+    else printf("Incorrect Maximal Independent Set!\n");
+}
+
+int* maximalIndependentSetSerial(Graph* G) {
+    int* Flags = (int*) malloc(G->n * sizeof(int));
+    memset(Flags, 0, G->n * sizeof(int));
+
+    for(int i = 0; i < G->n; ++i) {
+        int has_ngh_in_mis = 0;
+        for(int j = 0; j < G->V[i].degree; ++j) {
+            int ngh = G->V[i].Neighbors[j];
+            if(Flags[ngh] == 1) {
+                has_ngh_in_mis = 1;
+                break;
+            }
+        }
+        if(!has_ngh_in_mis) {
+            Flags[i] = 1;
+        }
+        else {
+            Flags[i] = 2;
+        }
+    }
+    return Flags;
+}
+
 __global__ void maximalIndependentSet(const Graph* G, int* Flags, int* V) {
     size_t v = blockIdx.x * gridDim.y + blockIdx.y;
 
