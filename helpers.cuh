@@ -21,7 +21,7 @@ Graph* new_graph_host(int n, int max_degree);
 dim3 calculateGridDim(int n);
 
 // perform a deep copy of the data structure Graph, from host to device and set graph_dev pointer to it
-void deep_copy_to_device(Graph *graph, Graph **graph_dev);
+void deep_copy(Graph *graph, Graph **graph_dev);
 
 // add an undirected edge between i and j to the graph
 void add_undirected_edge(Graph *graph, int i, int j);

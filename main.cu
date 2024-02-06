@@ -12,7 +12,7 @@ int main() {
     // print_graph(*graph);
 
     Graph *graph_dev;
-    deep_copy_to_device(graph, &graph_dev);
+    deep_copy(graph, &graph_dev);
 
     int* Flags = (int*) malloc(graph->n * sizeof(int));
     memset(Flags, 0, graph->n * sizeof(int));
@@ -59,5 +59,5 @@ int main() {
     checkMIS(graph, Flags_serial);
 
     printf("---------------------------\n");
-    printf("speedup: %.4f\n", time_spent_serial / time_spent_parallel);
+    printf("speedup: %.4fx\n", time_spent_serial / time_spent_parallel);
 }

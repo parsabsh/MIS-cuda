@@ -8,7 +8,7 @@ dim3 calculateGridDim(int n) {
     return dim3(65535, (n + 65535 - 1) / 65535);
 }
 
-void deep_copy_to_device(Graph *graph, Graph **graph_dev) {
+void deep_copy(Graph *graph, Graph **graph_dev) {
     Graph *dev_graph;
     cudaMalloc(&dev_graph, sizeof(Graph));
     cudaMemcpy(dev_graph, graph, sizeof(Graph), cudaMemcpyHostToDevice);
