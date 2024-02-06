@@ -5,7 +5,7 @@
 int main() {
     int n = 1000000;
     Graph* graph = new_graph_host(n, n);
-    int E = 20000;
+    int E = 900000;
     add_random_edges(graph, E);
 
     //* uncomment to print the initial graph
@@ -59,5 +59,5 @@ int main() {
     checkMIS(graph, Flags_serial);
 
     printf("---------------------------\n");
-    printf("speedup: %.4fx\n", time_spent_serial / time_spent_parallel);
+    printf("speedup: %.8fx\n", time_spent_serial / time_spent_parallel);
 }
