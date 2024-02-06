@@ -2,7 +2,6 @@
 #include <stdio.h>
 
 int main() {
-    // showoff();
     int n = 5;
     Graph* graph = new_graph_host(n, n);
     add_undirected_edge(graph, 0, 1);
@@ -12,7 +11,6 @@ int main() {
     // Graph* g_dev = deep_copy_to_device(g);
 
     // ----------------Deep Copy----------------------
-
     Graph *dev_graph;
     cudaMalloc(&dev_graph, sizeof(Graph));
     cudaMemcpy(dev_graph, graph, sizeof(Graph), cudaMemcpyHostToDevice);
@@ -75,13 +73,14 @@ int main() {
     gridSize = n;
     blockSize = 1;
 
-    // maximalIndependentSetKernel<<<gridSize, blockSize>>>(dev_graph, Flags_dev, locks_dev);
-    maximalIndependentSet<<<gridSize, blockSize>>>(dev_graph, lock_dev, Flags_dev);
+    maximalIndependentSetKernel<<<gridSize, blockSize>>>(dev_graph, Flags_dev, locks_dev);
+    // maximalIndependentSet<<<gridSize, blockSize>>>(dev_graph, Flags_dev);
     cudaDeviceSynchronize();
 
     cudaMemcpy(Flags, Flags_dev, graph->n * sizeof(int), cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < n; i++) {
-        printf("%d: %d\n", i, Flags[i]);
+        if (Flags[i] == 2)
+            printf("%d: %d\n", i, Flags[i]);
     }
 }

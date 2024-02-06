@@ -1,32 +1,32 @@
 #include <stdio.h>
 // #include "helpers.h"
 
-struct Lock {
+// struct Lock {
 
-    int *d_state;
+//     int *d_state;
 
-    // --- Constructor
-    Lock(void) {
-        int h_state = 0;                                        // --- Host side lock state initializer
-        cudaMalloc((void **)&d_state, sizeof(int));  // --- Allocate device side lock state
-        cudaMemcpy(d_state, &h_state, sizeof(int), cudaMemcpyHostToDevice); // --- Initialize device side lock state
-    }
+//     // --- Constructor
+//     Lock(void) {
+//         int h_state = 0;                                        // --- Host side lock state initializer
+//         cudaMalloc((void **)&d_state, sizeof(int));  // --- Allocate device side lock state
+//         cudaMemcpy(d_state, &h_state, sizeof(int), cudaMemcpyHostToDevice); // --- Initialize device side lock state
+//     }
 
-    // --- Destructor
-    __host__ __device__ ~Lock(void) { 
-#if !defined(__CUDACC__)
-        cudaFree(d_state); 
-#else
+//     // --- Destructor
+//     __host__ __device__ ~Lock(void) { 
+// #if !defined(__CUDACC__)
+//         cudaFree(d_state); 
+// #else
 
-#endif  
-    }
+// #endif  
+//     }
 
-    // --- Lock function
-    __device__ void lock(void) { while (atomicCAS(d_state, 0, 1) != 0); }
+//     // --- Lock function
+//     __device__ void lock(void) { while (atomicCAS(d_state, 0, 1) != 0); }
 
-    // --- Unlock function
-    __device__ void unlock(void) { atomicExch(d_state, 0); }
-};
+//     // --- Unlock function
+//     __device__ void unlock(void) { atomicExch(d_state, 0); }
+// };
 
 typedef struct Vertex {
     int degree;
@@ -95,19 +95,19 @@ __global__ void print_graph_dev(Graph* graph) {
     }
 }
 
-__global__ void print_graph_dev(Lock lock, Graph* graph) {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    if (tid < graph->n) {
-        Vertex v = graph->V[tid];
-        lock.lock();
-        printf("Vertex %d with degree %d: [ ", tid, v.degree);
-        for (int j = 0; j < v.degree; j++) {
-            printf("%d ", v.Neighbors[j]);
-        }
-        printf("]\n");
-        lock.unlock();
-    }
-}
+// __global__ void print_graph_dev(Lock lock, Graph* graph) {
+//     int tid = blockIdx.x * blockDim.x + threadIdx.x;
+//     if (tid < graph->n) {
+//         Vertex v = graph->V[tid];
+//         lock.lock();
+//         printf("Vertex %d with degree %d: [ ", tid, v.degree);
+//         for (int j = 0; j < v.degree; j++) {
+//             printf("%d ", v.Neighbors[j]);
+//         }
+//         printf("]\n");
+//         lock.unlock();
+//     }
+// }
 
 __global__ void print_graph_dev(Graph* graph, unsigned int* locks) {
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
@@ -159,11 +159,11 @@ __global__ void maximalIndependentSetKernel(const Graph* G, int* Flags, int* V) 
     while (v < G->n) {
         if (Flags[v]) break;
 
-        if (atomicCAS(&V[v], 0, 1)) {
+        if (atomicCAS(&V[v], 0, 1) == 0) {
             size_t k = 0;
             for (size_t j = 0; j < G->V[v].degree; j++) {
                 int ngh = G->V[v].Neighbors[j];
-                if (Flags[ngh] == 2 || atomicCAS(&V[ngh], 0, 1)) {
+                if (Flags[ngh] == 2 || atomicCAS(&V[ngh], 0, 1) == 0) {
                     k++;
                 } else {
                     break;
@@ -191,7 +191,7 @@ __global__ void maximalIndependentSetKernel(const Graph* G, int* Flags, int* V) 
             }
         } 
         // v += gridDim.x * blockDim.x;
-        printf("%d : %d\n",v, Flags[v]);
+        // printf("%d : %d\n",v, Flags[v]);
     }
 }
 
@@ -214,3 +214,25 @@ __global__ void maximalIndependentSet(const Graph* G, int* lock, int* Flags) {
     atomicExch(lock, 0);
     // *lock = 0;
 }
+
+__global__ void maximalIndependentSet(const Graph* G, int* Flags) {
+    size_t v = blockIdx.x * blockDim.x + threadIdx.x;
+
+    // while (atomicCAS(lock, 0, 1) != 0);
+    // printf("hi %d\n", v);
+    bool f = true;
+    for (size_t i = 0; i < G->V[v].degree; i++)
+    {
+        int ngh = G->V->Neighbors[i];
+        if (Flags[ngh] == 1)
+            f = false; 
+    }
+    if (!f)
+        Flags[v] = 1;
+    
+    // atomicExch(lock, 0);
+    // *lock = 0;
+}
+
+// __global__ void find_indepenedent_set(const Graph* G, int* Flags, )
+
